@@ -30,7 +30,7 @@ function renderGrid() {
     for (let i = 1; i <= 100; i++) {
         const div = document.createElement('div');
         div.className = 'envelope' + (envelopesState[i] ? ' completed' : '');
-        div.textContent = i;
+        div.innerHTML = `<span>${i}</span>`;
         div.onclick = () => {
             if (!envelopesState[i]) openModal(i);
         };
