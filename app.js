@@ -104,6 +104,15 @@ btnConfirm.onclick = async () => {
             renderGrid();
             updateStats();
             closeModal();
+            
+            // Efecto de Fanfarria (Confeti)
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#fcd535', '#0ecb81', '#ffffff']
+            });
+            
         } else {
             throw new Error('Error guardando progreso local');
         }
