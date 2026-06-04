@@ -275,3 +275,24 @@ header p {
     margin-bottom: 0 !important;
     font-size: 0.9rem;
 }
+
+@media (max-width: 600px) {
+    .container { padding: 20px 10px; }
+    header { padding: 20px 15px; border-radius: 15px; }
+    header h1 { font-size: 1.6rem; }
+    header p { font-size: 0.85rem; margin-bottom: 15px; }
+    
+    .stats-panel { gap: 15px; flex-direction: column; margin-bottom: 15px; }
+    .stat-box { width: 100%; padding: 10px; flex-direction: row; justify-content: space-between; }
+    .stat-label { margin-bottom: 0; font-size: 0.75rem; }
+    .stat-value { font-size: 1.2rem; }
+    
+    .grid-container { 
+        grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)); 
+        gap: 8px; 
+    }
+    .envelope { 
+        border-radius: 8px; 
+        font-size: 1rem; 
+    }
+}
