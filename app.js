@@ -12,6 +12,7 @@ const btnText = document.querySelector('.btn-text');
 const modalError = document.getElementById('modal-error');
 
 let selectedEnvelope = null;
+let actionContext = 'subscribe'; // 'subscribe' o 'redeem'
 let envelopesState = {};
 
 async function fetchProgress() {
@@ -32,7 +33,11 @@ function renderGrid() {
         div.className = 'envelope' + (envelopesState[i] ? ' completed' : '');
         div.innerHTML = `<span>${i}</span>`;
         div.onclick = () => {
-            if (!envelopesState[i]) openModal(i);
+            if (!envelopesState[i]) {
+                openModal(i, 'subscribe');
+            } else {
+                openModal(i, 'redeem');
+            }
         };
         grid.appendChild(div);
     }
@@ -55,9 +60,20 @@ function updateStats() {
     progressBar.style.width = percentage + '%';
 }
 
-function openModal(id) {
+function openModal(id, context) {
     selectedEnvelope = id;
-    modalTitle.textContent = `¿Ahorrar $${id} USDT?`;
+    actionContext = context;
+    
+    if (context === 'subscribe') {
+        modalTitle.textContent = `¿Ahorrar $${id} USDT?`;
+        btnText.textContent = 'Ahorrar ahora';
+        btnConfirm.style.background = 'var(--accent-gold)';
+    } else {
+        modalTitle.textContent = `¿Revertir $${id} USDT a Spot?`;
+        btnText.textContent = 'Retirar dinero';
+        btnConfirm.style.background = '#f6465d'; // Rojo
+    }
+    
     modalError.textContent = '';
     modal.classList.add('active');
 }
@@ -79,8 +95,10 @@ btnConfirm.onclick = async () => {
     modalError.textContent = '';
     
     try {
+        const endpoint = actionContext === 'subscribe' ? '/api/subscribe' : '/api/redeem';
+        
         // 1. Petición a Binance
-        const binanceRes = await fetch('/api/subscribe', {
+        const binanceRes = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount: selectedEnvelope, asset: 'USDT' })
@@ -93,25 +111,28 @@ btnConfirm.onclick = async () => {
         }
         
         // 2. Si Binance fue exitoso, guardamos progreso local
+        const isCompleted = actionContext === 'subscribe';
         const saveRes = await fetch('/api/progress', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ envelopeId: selectedEnvelope, completed: true })
+            body: JSON.stringify({ envelopeId: selectedEnvelope, completed: isCompleted })
         });
         
         if (saveRes.ok) {
-            envelopesState[selectedEnvelope] = true;
+            envelopesState[selectedEnvelope] = isCompleted;
             renderGrid();
             updateStats();
             closeModal();
             
-            // Efecto de Fanfarria (Confeti)
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#fcd535', '#0ecb81', '#ffffff']
-            });
+            // Efecto de Fanfarria (Confeti) solo si fue un ahorro
+            if (isCompleted) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#fcd535', '#0ecb81', '#ffffff']
+                });
+            }
             
         } else {
             throw new Error('Error guardando progreso local');
